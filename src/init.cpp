@@ -262,6 +262,7 @@ bool AppInit2(int argc, char* argv[])
             "  -rpcconnect=<ip> \t  "   + _("Send commands to node running on <ip> (default: 127.0.0.1)") + "\n" +
             "  -blocknotify=<cmd> "     + _("Execute command when the best block changes (%s in cmd is replaced by block hash)") + "\n" +
             "  -walletnotify=<cmd> "    + _("Execute command when a wallet transaction changes (%s in cmd is replaced by TxID)") + "\n" +
+            "  -pcstakenotify=<cmd> "   + _("Execute command when a prime controller stakes (%p, %i, %t, %c, %h in cmd replaced by pubkey, txid, type, PC number, block height resp.)") + "\n" +
             "  -upgradewallet   \t  "   + _("Upgrade wallet to latest format") + "\n" +
             "  -keypool=<n>     \t  "   + _("Set key pool size to <n> (default: 100)") + "\n" +
             "  -rescan          \t  "   + _("Rescan the block chain for missing wallet transactions") + "\n" +

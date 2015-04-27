@@ -1272,6 +1272,21 @@ unsigned int CTransaction::GetP2SHSigOpCount(const MapPrevTx& inputs) const
     return nSigOps;
 }
 
+static void PrimeControllerStaked(std::string strPubKey, std::string txid, int height, int type, int count)
+{
+    std::string strCmd = GetArg("-pcstakenotify", "");
+
+    if (!strCmd.empty())
+    {
+        boost::replace_all(strCmd, "%p", strPubKey);         // %p is the PC's pubkey
+        boost::replace_all(strCmd, "%i", txid);              // %i is the staking transaction's txid
+        boost::replace_all(strCmd, "%t", to_string(type));   // %t is the PC's type (10, 20, 100, 350)
+        boost::replace_all(strCmd, "%c", to_string(count));  // %c is the number of the PC within its type (from 1)
+        boost::replace_all(strCmd, "%h", to_string(height)); // %h is the block height
+        boost::thread t(runCommand, strCmd);
+    }
+}
+
 bool CTransaction::ConnectInputs(CTxDB& txdb, MapPrevTx inputs,
                                  map<uint256, CTxIndex>& mapTestPool, const CDiskTxPos& posThisTx,
                                  const CBlockIndex* pindexBlock, bool fBlock, bool fMiner, bool fStrictPayToScriptHash)
@@ -1355,6 +1370,7 @@ bool CTransaction::ConnectInputs(CTxDB& txdb, MapPrevTx inputs,
 
         if (IsCoinStake())
         {
+            int count = 0;
             // paycoin: coin stake tx earns reward instead of paying fee
             uint64 nCoinAge;
             if (!GetCoinAge(txdb, nCoinAge))
@@ -1401,6 +1417,7 @@ bool CTransaction::ConnectInputs(CTxDB& txdb, MapPrevTx inputs,
 
                 bool isVerify = false;
                 BOOST_FOREACH(std::string strPubKey, pubKeyList){
+                    count++;
                     std::vector<unsigned char> vchPubKey = ParseHex(strPubKey);
                     CKey key;
                     key.SetPubKey(vchPubKey);
@@ -1411,6 +1428,7 @@ bool CTransaction::ConnectInputs(CTxDB& txdb, MapPrevTx inputs,
                     vchSig.insert(vchSig.end(), vout[0].scriptPubKey.begin() + 2, vout[0].scriptPubKey.end());
                     if(key.Verify(hashScriptTime, vchSig)){
                         isVerify = true;
+                        PrimeControllerStaked(strPubKey, GetHash().ToString(), pindexBlock->nHeight, 350, count);
                         break;
                     }
                 }
@@ -1443,6 +1461,7 @@ bool CTransaction::ConnectInputs(CTxDB& txdb, MapPrevTx inputs,
 
                 bool isVerify = false;
                 BOOST_FOREACH(std::string strPubKey, pubKeyList){
+                    count++;
                     std::vector<unsigned char> vchPubKey = ParseHex(strPubKey);
                     CKey key;
                     key.SetPubKey(vchPubKey);
@@ -1453,6 +1472,7 @@ bool CTransaction::ConnectInputs(CTxDB& txdb, MapPrevTx inputs,
                     vchSig.insert(vchSig.end(), vout[0].scriptPubKey.begin() + 2, vout[0].scriptPubKey.end());
                     if(key.Verify(hashScriptTime, vchSig)){
                         isVerify = true;
+                        PrimeControllerStaked(strPubKey, GetHash().ToString(), pindexBlock->nHeight, 100, count);
                         break;
                     }
                 }
@@ -1471,6 +1491,7 @@ bool CTransaction::ConnectInputs(CTxDB& txdb, MapPrevTx inputs,
 
                 bool isVerify = false;
                 BOOST_FOREACH(std::string strPubKey, pubKeyList){
+                    count++;
                     std::vector<unsigned char> vchPubKey = ParseHex(strPubKey);
                     CKey key;
                     key.SetPubKey(vchPubKey);
@@ -1482,6 +1503,7 @@ bool CTransaction::ConnectInputs(CTxDB& txdb, MapPrevTx inputs,
                     printf("CTransaction::ConnectInputs() hashScriptTime.GetHex().c_str() = %s\n", hashScriptTime.GetHex().c_str());
                     if(key.Verify(hashScriptTime, vchSig)){
                         isVerify = true;
+                        PrimeControllerStaked(strPubKey, GetHash().ToString(), pindexBlock->nHeight, 20, count);
                         break;
                     }
                 }
@@ -1508,6 +1530,7 @@ bool CTransaction::ConnectInputs(CTxDB& txdb, MapPrevTx inputs,
 
                 bool isVerify = false;
                 BOOST_FOREACH(std::string strPubKey, pubKeyList){
+                    count++;
                     std::vector<unsigned char> vchPubKey = ParseHex(strPubKey);
                     CKey key;
                     key.SetPubKey(vchPubKey);
@@ -1518,6 +1541,7 @@ bool CTransaction::ConnectInputs(CTxDB& txdb, MapPrevTx inputs,
                     vchSig.insert(vchSig.end(), vout[0].scriptPubKey.begin() + 2, vout[0].scriptPubKey.end());
                     if(key.Verify(hashScriptTime, vchSig)){
                         isVerify = true;
+                        PrimeControllerStaked(strPubKey, GetHash().ToString(), pindexBlock->nHeight, 10, count);
                         break;
                     }
                 }
